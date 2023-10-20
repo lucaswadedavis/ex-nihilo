@@ -1,0 +1,37 @@
+# .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+env/
+*.env
+*.venv
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+.out/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+*.bak
+*.orig
+*.log
+*.sublime*
+*.iml
+*.ipr
+*.iws
+*.tmproj
+*.tmproject
+*.komodoproject
