@@ -207,7 +207,61 @@ This can include the creation of new tables, or the addition of new records to e
             },
         }
     },
+    {
+        "name": "bargraph_component",
+        "description": "Use for rendering a comparison of numerical data.",
+        "instruction": """
+Make sure to only respond with data actually in the database.
 
+The data should be an array of objects, where each object has a label and a value.
+
+Finally, provide an array of strings to be rendered as suggestions for followup user_inputs.
+These suggestions will be rendered as buttons for the user to click.
+For example, if the user asked for a list of tables in the database, which included tables for bird_facts, and planets,
+you might respond with the following suggestions:
+
+list all records in the bird_facts table
+get all planets in the planets table, then use the html_component to show them as set of circular divs
+how many planets are there in the planets table?
+
+Always provide suggestions for queries that you think the user might want to make next.
+This can include the creation of new tables, or the addition of new records to existing tables.
+        """,
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "description": "An array of objects, where each object has a label and a value.",
+                    "nullable": False,
+                    "items": {
+                        "type": "object",
+                        "nullable": False,
+                        "properties": {
+                            "label": {
+                                "type": "string",
+                                "description": "The label for the bar.",
+                            },
+                            "value": {
+                                "type": "number",
+                                "description": "The value for the bar.",
+                            },
+                        }
+                    },
+                },
+                "suggestions": {
+                    "type": "array",
+                    "description": "An array of strings to be rendered as suggestion chips for followup user_inputs.",
+                    "nullable": False,
+                    "items": {
+                        "type": "string",
+                        "nullable": False,
+                    },
+                }
+
+            },
+        }
+    },
 ]
 
 just_markdown_component_function = [
@@ -394,8 +448,6 @@ async def universal(request: Request):
     user_api_key = user_input_json.get('api_key')
     system_prompt = create_sql_system_prompt()
     prompts.append(system_prompt)
-    table = db['prompts']
-    table.insert({'text': system_prompt})
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_input},
@@ -421,8 +473,6 @@ async def universal(request: Request):
         queries,
         records)
     prompts.append(component_dispatch_system_prompt)
-    table = db['prompts']
-    table.insert({'text': component_dispatch_system_prompt})
     data["messages"] = [
         {"role": "system", "content": component_dispatch_system_prompt},
     ]
@@ -435,13 +485,14 @@ async def universal(request: Request):
         records,
         component_name)
     prompts.append(component_system_prompt)
-    table = db['prompts']
-    table.insert({'text': component_system_prompt})
     data["messages"] = [
         {"role": "system", "content": component_system_prompt},
     ]
     component_response = component_llm(data)
     component_response_data = component_response.get('data', {})
+    print('---')
+    print('component_response_data: ', component_response_data)
+    print('---')
     return {
         "user_input": user_input,
         "queries": queries,

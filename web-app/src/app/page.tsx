@@ -6,7 +6,8 @@ import { EuiFallback } from "./EuiFallback";
 import { EuiHtml } from "./EuiHtml";
 import { EuiMarkdown } from "./EuiMarkdown";
 import { UNIVERSAL_ENDPOINT } from "./constants";
-import { parseDirtyJSON } from "./utils";
+import { parseSuggestions } from "./utils";
+import { EuiBarGraph } from "./EuiBarGraph";
 
 export default function Home() {
   const [messages, setMessages] = useState<string[]>([]);
@@ -35,18 +36,14 @@ export default function Home() {
     });
     const latestResponse = await response.json();
     console.log(latestResponse);
+    console.log(latestResponse.data);
+    let suggestions: string[] = [];
     if (latestResponse?.data && typeof latestResponse.data === "string") {
-      latestResponse.data = parseDirtyJSON(latestResponse.data);
+      suggestions = parseSuggestions(latestResponse.data);
     }
     setWaitingForResponse(false);
     setResponses([...responses, latestResponse]);
-    if (latestResponse?.data?.suggestions) {
-      console.log("setting suggestions");
-      setSuggestions(latestResponse.data.suggestions);
-    } else {
-      console.log("no new suggestion: clearing suggestions");
-      setSuggestions(["Show me all the tables in the database"]);
-    }
+    setSuggestions(suggestions);
     if (textInput && textInput.current) textInput.current.focus();
   };
 
@@ -98,6 +95,8 @@ export default function Home() {
         res = <EuiMarkdown data={response} />;
       } else if (componentName === "html_component") {
         res = <EuiHtml data={response} />;
+      } else if (componentName === "bargraph_component") {
+        res = <EuiBarGraph data={response} />;
       } else {
         res = <EuiFallback data={response} />;
       }

@@ -18,3 +18,15 @@ export function parseDirtyJSON(input: string) {
   parsed.content = cleanUpHtmlString(parsed.content);
   return parsed;
 }
+
+export function parseSuggestions(input: string) {
+  function helper(key: string, value: any) {
+    if (key === "suggestions") {
+      return Array.isArray(value) ? value.map(String) : [];
+    }
+    return value;
+  }
+  const parsed = JSON.parse(input, helper);
+  const suggestions = parsed.suggestions || [];
+  return suggestions;
+}
