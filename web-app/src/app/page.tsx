@@ -3,6 +3,7 @@
 import React, { useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import ls from "./localStorage";
 
 const UNIVERSAL_ENDPOINT = "http://localhost:8000/universal";
 
@@ -167,12 +168,10 @@ export default function Home() {
   const [latestMessage, setLatestMessage] = useState("");
   const [responses, setResponses] = useState<any[]>([]);
   const [waitingForResponse, setWaitingForResponse] = useState(false);
-  const [apiKey, setApiKey] = useState<string>(
-    localStorage.getItem("apiKey") || ""
-  );
+  const [apiKey, setApiKey] = useState<string>(ls.getItem("apiKey") || "");
   const textInput = useRef<HTMLTextAreaElement>(null);
 
-  const sendMessage = async latestMessage => {
+  const sendMessage = async (latestMessage: string) => {
     setMessages([...messages, latestMessage]);
     setLatestMessage("");
     setWaitingForResponse(true);
@@ -296,7 +295,7 @@ export default function Home() {
           value={apiKey}
           onChange={e => {
             setApiKey(e.target.value);
-            localStorage.setItem("apiKey", e.target.value);
+            ls.setItem("apiKey", e.target.value);
           }}
         />
       </div>
