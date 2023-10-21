@@ -1,11 +1,20 @@
+function cleanUpHtmlString(input: string): string {
+  // Remove unnecessary escape characters
+  let cleaned = input.replace(/\\(\s+)/g, "");
+  return cleaned.trim();
+}
+
 export function parseDirtyJSON(input: string) {
-  const noNewlines = input.replace(/\n/g, "");
-  const escapedQuotes = noNewlines.replace(
-    /"content":\s*"(.*?)"/,
-    function (_, content) {
-      const escapedContent = content.replace(/"/g, '\\"');
-      return `"content": "${escapedContent}"`;
+  function customReviver(key: string, value: any) {
+    if (key === "content") {
+      return String(value);
     }
-  );
-  return JSON.parse(escapedQuotes);
+    if (key === "suggestions") {
+      return Array.isArray(value) ? value.map(String) : [];
+    }
+    return value;
+  }
+  const parsed = JSON.parse(input, customReviver);
+  parsed.content = cleanUpHtmlString(parsed.content);
+  return parsed;
 }
