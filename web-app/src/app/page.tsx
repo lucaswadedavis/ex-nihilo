@@ -6,17 +6,22 @@ import { EuiFallback } from "./EuiFallback";
 import { EuiHtml } from "./EuiHtml";
 import { EuiMarkdown } from "./EuiMarkdown";
 import { UNIVERSAL_ENDPOINT } from "./constants";
+import { parseDirtyJSON } from "./utils";
 
 export default function Home() {
   const [messages, setMessages] = useState<string[]>([]);
   const [latestMessage, setLatestMessage] = useState("");
   const [responses, setResponses] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<string[]>([
+    "Show me all the tables in the database",
+  ]);
   const [waitingForResponse, setWaitingForResponse] = useState(false);
   const [apiKey, setApiKey] = useState<string>(ls.getItem("apiKey") || "");
   const textInput = useRef<HTMLTextAreaElement>(null);
 
   const sendMessage = async (latestMessage: string) => {
     setMessages([...messages, latestMessage]);
+    setSuggestions([]);
     setLatestMessage("");
     setWaitingForResponse(true);
     console.log("sending message");
@@ -30,8 +35,18 @@ export default function Home() {
     });
     const latestResponse = await response.json();
     console.log(latestResponse);
+    if (latestResponse?.data && typeof latestResponse.data === "string") {
+      latestResponse.data = parseDirtyJSON(latestResponse.data);
+    }
     setWaitingForResponse(false);
     setResponses([...responses, latestResponse]);
+    if (latestResponse?.data?.suggestions) {
+      console.log("setting suggestions");
+      setSuggestions(latestResponse.data.suggestions);
+    } else {
+      console.log("no new suggestion: clearing suggestions");
+      setSuggestions(["Show me all the tables in the database"]);
+    }
     if (textInput && textInput.current) textInput.current.focus();
   };
 
@@ -39,8 +54,7 @@ export default function Home() {
     return (
       <div
         key={`suggestion-${index}`}
-        className="bg-gradient-to-r from-green-400 to-blue-500 shadow-md rounded-lg px-4 pt-4 pb-4 mb-4 cursor-pointer inline-block center"
-        style={{ margin: 8 }}
+        className="bg-gradient-to-r from-green-400 to-blue-500 shadow-md rounded-lg px-4 pt-4 pb-4 mb-4 cursor-pointer inline-block m-2"
         onClick={() => {
           setLatestMessage(suggestion);
           sendMessage(suggestion);
@@ -52,10 +66,7 @@ export default function Home() {
   };
 
   const renderSuggestions = () => {
-    const suggestions = [
-      "get all the tables in the database",
-      "get all the planets from the planets table, then use the html_component to present them in a handsome table",
-    ];
+    if (suggestions.length === 0) return null;
     return (
       <div className="w-full flex justify-center">
         {suggestions.map(renderSuggestion)}
@@ -71,7 +82,9 @@ export default function Home() {
           natural language, and a flaky AI that will try to follow your
           instructions.
         </p>
-        {renderSuggestions()}
+        <p>
+          The AI has no memory, so every message you send is a new instruction.
+        </p>
       </div>
     );
   };
@@ -98,10 +111,14 @@ export default function Home() {
 
   const renderWaitingForResponseArea = () => {
     if (!waitingForResponse) return null;
+    const latestMessage = messages[messages.length - 1];
     return (
       <div className="w-full">
         <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-          <p className="text-gray-500 text-sm font-bold mb-2">
+          <p className="text-gray-500 text-center font-bold text-4xl mb-2">
+            {latestMessage}
+          </p>
+          <p className="text-gray-500 text-center font-bold mb-2">
             Waiting for response...
           </p>
         </div>
@@ -114,6 +131,7 @@ export default function Home() {
       <h1 className="text-6xl mb-4 text-white">ex-nihilo</h1>
       {renderResponses()}
       {renderWaitingForResponseArea()}
+      {renderSuggestions()}
       <div className="flex justify-between items-center w-full sticky">
         <textarea
           ref={textInput}

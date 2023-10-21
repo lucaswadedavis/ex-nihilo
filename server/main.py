@@ -134,6 +134,18 @@ component_functions = [
         "instruction": """
 Make sure to only respond with data actually in the database.
 Use Markdown to format the text.
+
+Finally, provide an array of strings to be rendered as suggestions for followup user_inputs.
+These suggestions will be rendered as buttons for the user to click.
+For example, if the user asked for a list of tables in the database, which included tables for bird_facts, and planets,
+you might respond with the following suggestions:
+
+list all records in the bird_facts table
+get all planets in the planets table, then use the html_component to show them as set of circular divs
+how many planets are there in the planets table?
+
+Always provide suggestions for queries that you think the user might want to make next.
+This can include the creation of new tables, or the addition of new records to existing tables.
         """,
         "parameters": {
             "type": "object",
@@ -142,6 +154,15 @@ Use Markdown to format the text.
                     "type": "string",
                     "description": "Markdown content to be rendered in the component.",
                 },
+                "suggestions": {
+                    "type": "array",
+                    "description": "An array of strings to be rendered as suggestion chips for followup user_inputs.",
+                    "nullable": False,
+                    "items": {
+                        "type": "string",
+                        "nullable": False,
+                    },
+                }
             },
         }
     },
@@ -151,10 +172,21 @@ Use Markdown to format the text.
         "instruction": """
 Make sure to only respond with data actually in the database.
 Make full use of HTML to format the response.
-You can also use CSS to style the response, and the Tailwind CSS framework is available.
+You can also use CSS to style the response.
 Your HTML should be valid and well-formed.
-Your HTML will be injected into a React component, so use **className** instead of **class**.
 The background color of the page is white.
+
+Finally, provide an array of strings to be rendered as suggestions for followup user_inputs.
+These suggestions will be rendered as buttons for the user to click.
+For example, if the user asked for a list of tables in the database, which included tables for bird_facts, and planets,
+you might respond with the following suggestions:
+
+list all records in the bird_facts table
+get all planets in the planets table, then use the html_component to show them as set of circular divs
+how many planets are there in the planets table?
+
+Always provide suggestions for queries that you think the user might want to make next.
+This can include the creation of new tables, or the addition of new records to existing tables.
         """,
         "parameters": {
             "type": "object",
@@ -163,6 +195,15 @@ The background color of the page is white.
                     "type": "string",
                     "description": "Markdown content to be rendered in the component.",
                 },
+                "suggestions": {
+                    "type": "array",
+                    "description": "An array of strings to be rendered as suggestion chips for followup user_inputs.",
+                    "nullable": False,
+                    "items": {
+                        "type": "string",
+                        "nullable": False,
+                    },
+                }
             },
         }
     },
