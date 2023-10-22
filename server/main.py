@@ -310,26 +310,24 @@ sql_functions = [
 
 
 def llm(data):
-    api_key = data["api_key"]
-    model = data["model"]
+    api_key = data.get("api_key")
+    model = data.get("model", "gpt-3.5-turbo")
     openai.api_key = api_key
     response = openai.ChatCompletion.create(
-        model=data["model"] or "gpt-3.5-turbo",
-        messages=data["messages"],
+        model=model,
+        messages=data.get("messages"),
         functions=oai_functions,
     )
     return response
 
 
 def component_llm(data):
-    print('---data: ', data)
     api_key = data["api_key"]
     openai.api_key = api_key
     limited_component_functions = [
         func for func in component_functions if func['name'] == data['component_name']]
-    if len(limited_component_functions) == 0:
+    if not limited_component_functions:
         limited_component_functions = just_markdown_component_function
-    print('---limited_component_functions: ', limited_component_functions)
     result = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=data["messages"],
@@ -337,8 +335,6 @@ def component_llm(data):
         function_call={"name": data['component_name']}
     )
     first_choice = result["choices"][0]["message"]
-    function_name = ''
-    arguments = {}
     func = first_choice.get("function_call")
     if func:
         function_name = func["name"]
@@ -359,20 +355,29 @@ def component_dispatch_llm(data):
         function_call={"name": "dispatch"}
     )
     first_choice = result["choices"][0]["message"]
-    function_name = ''
-    arguments = {}
     func = first_choice.get("function_call")
     if func:
         function_name = func["name"]
-        arguments = func["arguments"]
-        arguments = json.loads(arguments)
-        component_name = arguments.get('component_name')
+        arguments = json.loads(func["arguments"])
+        component_name = arguments.get('component_name', 'markdown_component')
     else:
         function_name = 'fallback'
         arguments = {'content': first_choice}
+        component_name = 'markdown_component'
     if component_name not in [func['name'] for func in component_functions]:
         component_name = 'markdown_component'
     return component_name
+
+
+def execute_queries(queries):
+    records = []
+    for query in queries:
+        try:
+            result = db.query(query)
+            records.extend([row for row in result])
+        except Exception as e:
+            print(f"Error executing query {query}: {e}")
+    return records
 
 
 def sql_llm(data):
@@ -386,53 +391,26 @@ def sql_llm(data):
     )
     first_choice = result["choices"][0]["message"]
     queries, records = [], []
-    if first_choice["function_call"]:
+    if first_choice.get("function_call"):
         func = first_choice["function_call"]
         function_name = func["name"]
         arguments = func["arguments"]
         if function_name == "sql_queries":
-            # the arguments are going to be JSON strings, so we need to parse them
             arguments = json.loads(arguments)
-            print("---Arguments: ", arguments)
             queries = arguments.get("sql_queries", [])
-            # we need to execute the SQL query, but first we ensure that "sql_queries" key exists in arguments
-            records = []
-            for query in queries:
-                try:
-                    result = db.query(query)
-                    print("Executed query: ", query)
-                    print("Query executed successfully.")
-                    try:
-                        for row in result:
-                            print(row)
-                            records.append(row)
-                    except Exception as e:
-                        print("Error getting result rows: ", e)
-                except Exception as e:
-                    print("Error executing query: ", e)
+            records = execute_queries(queries)
     return {"queries": queries, "records": records}
-
-
-def create_table(table_name: str, schema: str):
-    try:
-        result = db.query(
-            f'CREATE TABLE IF NOT EXISTS {table_name} ({schema})')
-        print(f"Table {table_name} created successfully.")
-        for row in result:
-            print(row)
-    except Exception as e:
-        print(f"Error creating table {table_name}: ", e)
 
 
 def check_and_create_db():
     try:
         result = db.query(create_first_tables)
         db.query(create_trigger)
-        print("Table created successfully.")
+        print("Database initialized successfully.")
         for row in result:
             print(row)
     except Exception as e:
-        print("Error creating table: ", e)
+        print(f"Error initializing database: {e}")
 
 
 @app.on_event("startup")
@@ -442,16 +420,17 @@ async def startup_event():
 
 @app.post("/universal")
 async def universal(request: Request):
-    prompts = []
     user_input_json = await request.json()
     user_input = user_input_json.get('message')
     user_api_key = user_input_json.get('api_key')
+
     system_prompt = create_sql_system_prompt()
-    prompts.append(system_prompt)
+    prompts = [system_prompt]
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_input},
     ]
+
     data = {
         "api_key": user_api_key,
         "messages": messages,
@@ -462,37 +441,39 @@ async def universal(request: Request):
         "presence_penalty": 0,
         "stop": ["default_stop"]
     }
+
     sql_llm_response = sql_llm(data)
     queries = sql_llm_response["queries"]
     records = sql_llm_response["records"]
-    print('----- RECORDS')
-    print(records)
-    print(type(records))
+
     component_dispatch_system_prompt = create_dispatch_component_system_prompt(
         user_input,
         queries,
         records)
     prompts.append(component_dispatch_system_prompt)
+
     data["messages"] = [
         {"role": "system", "content": component_dispatch_system_prompt},
     ]
+
     component_name = component_dispatch_llm(data)
     data['max_tokens'] = 2000
     data['component_name'] = component_name
+
     component_system_prompt = create_component_system_prompt(
         user_input,
         queries,
         records,
         component_name)
     prompts.append(component_system_prompt)
+
     data["messages"] = [
         {"role": "system", "content": component_system_prompt},
     ]
+
     component_response = component_llm(data)
     component_response_data = component_response.get('data', {})
-    print('---')
-    print('component_response_data: ', component_response_data)
-    print('---')
+
     return {
         "user_input": user_input,
         "queries": queries,
