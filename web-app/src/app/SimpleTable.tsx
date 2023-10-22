@@ -1,7 +1,17 @@
 "use client";
 import React from "react";
 
-export const SimpleTable = ({ data = [] }) => {
+interface DataItem {
+  [key: string]: any;
+}
+
+interface SimpleTableProps {
+  data: DataItem[];
+}
+
+export const SimpleTable: React.FC<SimpleTableProps> = ({
+  data = [],
+}: SimpleTableProps) => {
   if (!Array.isArray(data) || data.length === 0 || !data[0]) return null;
   const keys = Object.keys(data[0]);
   const keyFingerprint = keys.join("-");

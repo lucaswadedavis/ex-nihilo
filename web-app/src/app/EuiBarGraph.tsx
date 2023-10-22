@@ -1,5 +1,7 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
+import { QueryArea } from "./QueryArea";
+import { ResultArea } from "./ResultArea";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,6 +12,7 @@ import {
   Legend,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
+import { ResultAreaProps } from "./ResultArea";
 
 ChartJS.register(
   CategoryScale,
@@ -41,6 +44,8 @@ interface EuiBarGraphProps {
   data: {
     user_input: string;
     data: string;
+    queries: string[];
+    result: ResultAreaProps["result"];
   };
 }
 
@@ -49,6 +54,7 @@ interface ParsedData {
 }
 
 export const EuiBarGraph: React.FC<EuiBarGraphProps> = ({ data }) => {
+  const [isOpen, setIsOpen] = useState(false);
   let parsedData: ParsedData = { content: [] };
   let content: BarGraphData[] = [];
   try {
@@ -70,6 +76,20 @@ export const EuiBarGraph: React.FC<EuiBarGraphProps> = ({ data }) => {
       <h1 className="block text-gray-800 text-lg font-bold mb-2">
         {data?.user_input}
       </h1>
+      <p
+        className="text-gray-500 text-sm font-bold mb-2 cursor-pointer"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        Details
+      </p>
+      <div className="flex justify-between text-gray-700">
+        <div className="w-1/2 p-4">
+          {isOpen && <QueryArea queries={data?.queries || []} />}
+        </div>
+        <div className="w-1/2 p-4">
+          {isOpen && <ResultArea result={data?.result} />}
+        </div>
+      </div>
       <Bar options={options} data={{ labels, datasets }} />
     </div>
   );
