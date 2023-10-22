@@ -4,9 +4,18 @@
 
 It has a **Python3 / FastAPI** backend and a **TypeScript / NextJS** frontend.
 
-In the server directory run 
+## Running the dev environment
+
+### From the server directory
 
 ```
 python -m venv env
+pip install requirements.txt
 uvicorn main:app --reload
+```
+
+### From the web-client directory
+
+```
+npm run dev
 ```
