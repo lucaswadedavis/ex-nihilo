@@ -19,7 +19,7 @@ export const SimpleTable: React.FC<SimpleTableProps> = ({
     <div className="overflow-auto max-h-screen">
       <table className="table-auto w-full text-left whitespace-no-wrap">
         <thead>
-          <tr className="text-sm font-medium text-gray-700 bg-gray-200">
+          <tr className="text-md font-medium text-gray-700 bg-gray-200">
             {keys.map((key: string, index: number) => {
               const keyName = `${keyFingerprint}-${index}`;
               return (
@@ -38,7 +38,7 @@ export const SimpleTable: React.FC<SimpleTableProps> = ({
                 {keys.map((key: string, j: number) => {
                   const keyName = `cell-${keyFingerprint}-${i}-${j}`;
                   return (
-                    <td key={keyName} className="px-4 py-3">
+                    <td key={keyName} className="px-4 py-3 text-xs">
                       {row[key]}
                     </td>
                   );

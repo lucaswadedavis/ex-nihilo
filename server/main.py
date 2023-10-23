@@ -174,6 +174,7 @@ Make sure to only respond with data actually in the database.
 Make full use of HTML to format the response.
 You can also use CSS to style the response.
 Your HTML should be valid and well-formed.
+Your HTML should not include double quotes, and nothing should be escaped
 The background color of the page is white.
 
 Finally, provide an array of strings to be rendered as suggestions for followup user_inputs.
