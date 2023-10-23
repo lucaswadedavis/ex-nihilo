@@ -32,7 +32,9 @@ export function EuiMarkdown({ data }: EuiFallbackProps) {
         <div className="w-1/2 p-4">
           {isOpen && <QueryArea queries={data?.queries} />}
         </div>
-        <div className="w-1/2 p-4">{isOpen && ResultArea(data?.result)}</div>
+        <div className="w-1/2 p-4">
+          {isOpen && <ResultArea result={data?.result} />}
+        </div>
       </div>
       <ReactMarkdown
         className="text-gray-700 text-base"
