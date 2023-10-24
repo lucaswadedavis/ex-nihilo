@@ -170,11 +170,15 @@ This can include the creation of new tables, or the addition of new records to e
         "name": "html_component",
         "description": "Use for rendering a non-interactive html output. No javascript allowed.",
         "instruction": """
+You are going to compose a **Handlebars** template for producing html that will be injected into a React component.
+Your **Handlebars** template will be hydrated with the records provided above.
+The top level **key** that holds the records will be called **result**.
 Make sure to only respond with data actually in the database.
 Make full use of HTML to format the response.
-You can also use CSS to style the response.
+You can also use inline CSS to style the response (and only inline CSS, no style tags allowed).
 Your HTML should be valid and well-formed.
 Your HTML should not include double quotes, and nothing should be escaped
+Do not signify new lines with a backslash
 The background color of the page is white.
 
 Finally, provide an array of strings to be rendered as suggestions for followup user_inputs.
@@ -483,3 +487,11 @@ async def universal(request: Request):
         "data": component_response_data,
         "prompts": prompts
     }
+
+
+@app.post("/sql")
+async def sql_endpoint(request: Request):
+    req = await request.json()
+    queries = req.get('queries')
+    result = execute_queries(queries)
+    return {"result": result}
