@@ -17,5 +17,16 @@ uvicorn main:app --reload
 ### From the web-client directory
 
 ```
+npm install
 npm run dev
 ```
+
+## Examples
+
+![demonstration of natural language update of the database and creation of the display component](./assets/display-update-jupiter-color.png)
+
+![displays all planets in the database](./assets/display-planets.png)
+
+![displays Jupiter as a social profile](./assets/display-jupiter-profile.png)
+
+![displays the planets data as a bargraph component](./assets/display-bargraph.png)
