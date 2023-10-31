@@ -1,9 +1,10 @@
 "use client";
-import React, { useState } from "react";
+import Handlebars from "handlebars";
+import { useState } from "react";
 import { QueryArea } from "./QueryArea";
 import { ResultArea } from "./ResultArea";
+import { TemplateArea } from "./TemplateArea";
 import { parseDirtyJSON } from "./utils";
-import Handlebars from "handlebars";
 
 interface EuiHtmlProps {
   component: any;
@@ -66,9 +67,10 @@ export function EuiHtml({
         <div className="flex justify-between text-gray-700 bg-gray-300">
           <div className="w-1/2 p-4">
             <QueryArea queries={component?.queries} />
+            <ResultArea result={component?.result} />
           </div>
           <div className="w-1/2 p-4">
-            <ResultArea result={component?.result} />
+            <TemplateArea template={component?.data?.content} />
           </div>
         </div>
       )}

@@ -132,6 +132,9 @@ component_functions = [
         "name": "markdown_component",
         "description": "Use for rendering a text response to the user.",
         "instruction": """
+You are going to compose a **Handlebars** template for producing markdown that will be injected into a ReactMarkdown component.
+Your **Handlebars** template will be hydrated with the records provided above.
+The top level **key** that holds the records will be called **result**.
 Make sure to only respond with data actually in the database.
 Use Markdown to format the text.
 
@@ -152,7 +155,7 @@ This can include the creation of new tables, or the addition of new records to e
             "properties": {
                 "content": {
                     "type": "string",
-                    "description": "Markdown content to be rendered in the component.",
+                    "description": "Handlebars template of Markdown content to be rendered in the component.",
                 },
                 "suggestions": {
                     "type": "array",
@@ -198,7 +201,7 @@ This can include the creation of new tables, or the addition of new records to e
             "properties": {
                 "content": {
                     "type": "string",
-                    "description": "Markdown content to be rendered in the component.",
+                    "description": "Handlebars template of HTML content to be rendered in the component.",
                 },
                 "suggestions": {
                     "type": "array",

@@ -159,7 +159,15 @@ export default function Home() {
       console.log("response", response);
       const componentName = response.component_name;
       if (componentName === "markdown_component") {
-        res = <EuiMarkdown data={response} />;
+        res = (
+          <EuiMarkdown
+            component={response}
+            saveComponent={saveComponent}
+            updateComponent={updateComponent}
+            deleteComponent={deleteComponent}
+            saved={saved}
+          />
+        );
       } else if (componentName === "html_component") {
         res = (
           <EuiHtml
