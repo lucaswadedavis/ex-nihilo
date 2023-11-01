@@ -90,11 +90,8 @@ def create_component_system_prompt(user_input, queries, records, component_name)
     component_system_prompt += 'The following SQL queries were executed:\n'
     component_system_prompt += '\n'.join(queries)
     component_system_prompt += '\n\n'
-    component_system_prompt += 'The following records were returned:\n'
-    for record in records:
-        for key, value in record.items():
-            component_system_prompt += f'{key}: {value}\n'
-        component_system_prompt += '\n'
+    component_system_prompt += 'The following records were returned:\n\n'
+    component_system_prompt += json.dumps({'result': records}, indent=4)
     component_system_prompt += '\n\n'
     component_system_prompt += 'Your job is to create data for the component to render.\n'
     component_system_prompt += 'The schema for the data is as follows:\n\n'
@@ -135,6 +132,7 @@ component_functions = [
 You are going to compose a **Handlebars** template for producing markdown that will be injected into a ReactMarkdown component.
 Your **Handlebars** template will be hydrated with the records provided above.
 The top level **key** that holds the records will be called **result**.
+Don't directly use the values returned from the database, but instead use the Handlebars syntax to access them.
 Make sure to only respond with data actually in the database.
 Use Markdown to format the text.
 
